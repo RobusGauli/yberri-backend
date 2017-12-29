@@ -1,0 +1,16 @@
+{
+  "name": "yberri-backend",
+  "version": "1.0.0",
+  "description": "Backend",
+  "main": "src/index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node src/index.js"
+  },
+  "author": "Robus Gauli",
+  "license": "ISC",
+  "dependencies": {
+    "mongodb": "^3.0.1",
+    "yberri": "^1.4.0"
+  }
+}
