@@ -33,6 +33,9 @@ const Types = {
   objectOf: createObjectOfTypeChecker,
 }
 
+module.exports = Types;
+
+
 //here we will pass in the another type checker
 function createArrayOfTypeChecker(typeChecker) {
   function validate(isRequired) {
@@ -106,10 +109,12 @@ let person = Types.objectOf({
   })
 }).isRequired
 
+
+
 let _data = {
   name : 'love',
   age: 23,
-  friends: [3,4 , 5],
+  friends: [2,4 ,2],
   address: {
     one: "asd"
   }
