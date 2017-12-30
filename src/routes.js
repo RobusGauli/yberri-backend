@@ -22,7 +22,6 @@ const initializeRoutes = createRoutes({
 });
 
 
-
 module.exports = {
   initializeRoutes,
 }

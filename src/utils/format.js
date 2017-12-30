@@ -15,6 +15,8 @@
 
 module.exports = formatToJson;
 
+const Types = require('./types');
+
 /* eslint-disable no-plusplus */
 function evaluateObjectOf(typeInstance) {
   // here we have the plain Object
@@ -71,3 +73,14 @@ function formatToJson(type) {
     }
   }
 }
+
+
+const person = Types.objectOf({
+  name: Types.string.isRequired,
+  friends: Types.arrayOf(Types.number),
+  address: Types.objectOf({
+    one: Types.string.isRequired,
+  }),
+})
+
+console.log(formatToJson(person));

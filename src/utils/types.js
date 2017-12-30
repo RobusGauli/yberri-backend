@@ -38,7 +38,31 @@ function createArrayOfTypeChecker(typeChecker) {
 
       validate(value) {
         // here is the validation for the arrayof Type checker
-        console.log(this.name, value);
+        if (this.isRequired === true && (value === undefined || value === null)) {
+          return `Array[] of type ${this.typeChecker().name} is required but not provided.`;
+        }
+        // we here have to go through each list
+        if (value === undefined || value === null) {
+          return `Warning ${value} was passed instead of array of type ${this.typeChecker().name}.`;
+        }
+        // if object that is not iterable is provided
+        if (!Array.isArray(value)) {
+          // not iterable
+          return `Warning! value of type ${getPreciseType(value)} was passed instead of array of type ${this.typeChecker().name}`;
+        }
+        const result = [];
+        value.forEach((item) => {
+          // here we go through the list and apply
+          result.push(this.typeChecker().validate(item)); 
+        });
+        return result;
+      }
+
+      getJsonSpec() {
+        if (this.typeChecker === null || this.typeChecker === undefined) {
+          throw new Error('Cannot provide specification for non type Array');
+        }
+        return [`${this.typeChecker().getJsonSpec()}`];
       }
     })();
   }
@@ -53,21 +77,54 @@ function createObjectOfTypeChecker(plainObject) {
     return new (class {
 
       constructor() {
-        this.name = 'objectOf'
+        this.name = 'objectOf';
         this.isRequired = isRequired;
         this.plainObject = plainObject;
       }
 
       validate(value) {
         // here is the validation for the arrayof Type checker
-        console.log(value, this.name);
+        // first check if it is required
+        if (this.isRequired) {
+          // we require the value
+          if (!(typeof value === 'object' && value !== null)) {
+            return 'Object is required but not provided.';
+          }
+        }
+        if (value === null || value === undefined || !typeof value === 'object') {
+          return 'Warning! Object is not provided';
+        }
+        const result = {};
+        if (this.plainObject === undefined || this.plainObject === null) {
+          throw new Error(`Cannot validate on ${this.plainObject}.`);
+        }
+        Object.entries(this.plainObject)
+          .forEach(([key, val]) => {
+            // get the value of the data
+            const valueOfData = value[key];
+            result[key] = val().validate(valueOfData);
+          });
+        return result;
+      }
+
+      getJsonSpec() {
+        // provide the specification
+        const specification = {};
+        if (this.plainObject === undefined || this.plainObject === null) {
+          throw new Error('Cannot Provide specification for empty Object');
+        }
+        Object.entries(this.plainObject).forEach(([key, value]) => {
+          // 
+          specification[key] = value().getJsonSpec();
+        });
+        return specification;
       }
     })();
   }
-  let validatorFunction = validate.bind(null, false);
+  const validatorFunction = validate.bind(null, false);
   validatorFunction.isRequired = validate.bind(null, true);
   return validatorFunction;
-} 
+}
 
 
 function createPrimitiveTypeChecker(expectedType) {
@@ -81,130 +138,61 @@ function createPrimitiveTypeChecker(expectedType) {
       }
 
       validate(value) {
-        return getPreciseType(value) === this.expectedType;
+        // here we have list of string , bool and many more
+        if (this.isRequired && (value === undefined || value === null)) {
+          return `Value of type ${this.expectedType} is required but not provided.`;
+        }
+        if (getPreciseType(value) === this.expectedType) {
+          return 'Success';
+        }
+        return `Warning value of type ${getPreciseType(value)} was passed instead of type ${this.expectedType}`;
+      }
+
+      getJsonSpec() {
+        return `${this.expectedType}`;
       }
     })();
   }
+  
   const validatorFunction = validate.bind(null, false);
   validatorFunction.isRequired = validate.bind(null, true);
   return validatorFunction;
 }
 
 
-let person = Types.objectOf({
-  name: Types.string.isRequired,
-  friends: Types.arrayOf(Types.number),
-  address: Types.objectOf({
-    one: Types.string.isRequired,
-  }),
-}).isRequired;
-
-// api will be somethign like this
-
-// intersect(person, _data) //should return an object with error, _cleanedup data
-// console.log(person())
-
-function intersect(type, data) {
-  // here we rolll up the magic by cross matching eahc
-  // create an object out of the magic
-  // initialte the personTypeObject
-  const typeObject = type();
-  // now based on the types we switch here and there
-  switch (typeObject.name) {
-    case 'objectOf': {
-      evaluateObjectOf(typeObject, data);
-      break;
-    }
-    case 'arrayOf': {
-      evaluateArrayOf(typeObject, data);
-      break;
-    }
-    case 'string': {
-      evaluateString(typeObject, data);
-      break;
-    }
-
-    case 'number': {
-      evaluateNumber(typeObject, data);
-      break;
-    }
-    case 'boolean': {
-      evaluateBoolean(typeObject, data);
-      break;
-    }
-    default: {
-      console.log('Something went wrong.');
-      break;
-    }
-  }
-}
-
-
-function evaluateObjectOf(type, data) {
-  // we know the type and the data contains the matches
-  // iterate through the type and access the data
-
-  if (type.isRequired && (data === undefined || data === null)) {
-    throw new Error(`${'Object'} is required but not provided`);
-  }
-  Object.keys(type.plainObject).forEach((key) => {
-    // get the value
-    const value = data[key]
-    
-    // once we have the value then, we again call the intersect with the new value and the type
-    intersect(type.plainObject[key], value)
-  });
-}
-
-function evaluateArrayOf(type, data) {
-  // we will iterate over the data
-  if (type.isRequired && (data === undefined || data === null)) {
-    throw new Error('list is required but not proviided');
-  }
-  for (let i = 0; i < data.length; i++) {
-    const value = data[i];
-    intersect(type.typeChecker, value);
-  }
-}
-
-function evaluateString(type, data) {
-  if (type.isRequired && (data === undefined || data === null)) {
-    throw new Error('String is required but not provided');
-  }
-
-  if (!(getPreciseType(data) === 'string')) {
-    throw new Error(`String is expected but got ${getPreciseType(data)}`);
-  }
-}
-
-
-function evaluateNumber(type, data) {
-  if (type.isRequired && (data === undefined || data === null)) {
-    throw new Error('Number is required but not provided');
-  }
-
-  if (!(getPreciseType(data) === 'number')) {
-    throw new Error('Number is expected but got ' + getPreciseType(data));
-  }
-}
-
-function evaluateBoolean(type, data) {
-  if (type.isRequired && (data === undefined || data === null)) {
-    throw new Error('Boolean is required but not provided');
-  }
-
-  if (!(getPreciseType(data) === 'boolean')) {
-    throw new Error('Boolean is expected but got ' + getPreciseType(data));
-  }
-}
-
-let data = {
-  name: 'love',
-  age: 23,
-  friends: [2, 4, 2],
-  address: {
-    one: 'AS',
+const data = {
+  age: 1,
+  friends: 's',
+  adrress: {
+    one: "ASd",
   },
+  person: {
+    love: 3,
+    call: 'loe is there'
+  }
 };
 
-intersect(person, data);
+  /*
+  const person = Types.objectOf({
+    call: Types.string.isRequired,
+    love: Types.number,
+  })
+
+  let an = Types.objectOf({
+    
+    name: Types.string.isRequired,
+    friends: Types.arrayOf(Types.number.isRequired).isRequired,
+    age: Types.number,
+    adrress: Types.objectOf({
+      one: Types.string.isRequired,
+    }),
+  person,
+  ko: person,
+  });
+  console.log(an().validate(data));
+  console.log(an().getJsonSpec());
+
+  //intersect(person, data);
+
+  //console.log(person().validate(data));
+*/
