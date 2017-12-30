@@ -27,7 +27,7 @@ const url = 'mongodb://localhost:27017';
 
 
 const dbInjector = db => (handler, request, response, ...args) => {
-  // we can inject the 
+  // we can inject the facin
   response.db = db;
   return Promise.resolve([handler, request, response, ...args]);
 
