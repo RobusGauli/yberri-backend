@@ -21,7 +21,7 @@ const Types = {
   bool: createPrimitiveTypeChecker('boolean'),
   arrayOf: createArrayOfTypeChecker,
   objectOf: createObjectOfTypeChecker,
-}
+};
 
 module.exports = Types;
 

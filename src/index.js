@@ -4,36 +4,35 @@ const { initializeRoutes } = require('./routes');
 
 const url = 'mongodb://localhost:27017';
 
-
+// root
 (async (dbUrl) => {
-  //console.log(app);
+  // console.log(app);
   try {
-    const client = await mongodb.connect(url)
+    const client = await mongodb.connect(dbUrl)
     const db = client.db('test');
     const app = Yberri()
     app
       .applyMiddleware(dbInjector(db))
-      .applyMiddleware(bodyParserMiddleware)
-    //initialize the App instannce
+      .applyMiddleware(bodyParserMiddleware);
+    // initialize the App instannce
     initializeRoutes(app);
-    //const main = App(app, db);
-    
+    // const main = App(app, db);
     app.run('localhost', 4000);
-    
-  }catch(error) {
-    console.log(error);
+  } catch (error) {
+    // console.log(error);
   }
-})(url)
+})(url);
 
-//console.log(getConnection());
+// console.log(getConnection());
 
 
 const dbInjector = db => (handler, request, response, ...args) => {
-  //we can inject the 
+  // we can inject the 
   response.db = db;
   return Promise.resolve([handler, request, response, ...args]);
 
 }
+
 const App = (app, db) => {
   return new class {
     constructor(app, db) {
