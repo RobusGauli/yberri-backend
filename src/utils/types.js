@@ -172,27 +172,33 @@ const data = {
   }
 };
 
-  /*
-  const person = Types.objectOf({
-    call: Types.string.isRequired,
-    love: Types.number,
-  })
 
-  let an = Types.objectOf({
-    
-    name: Types.string.isRequired,
-    friends: Types.arrayOf(Types.number.isRequired).isRequired,
-    age: Types.number,
-    adrress: Types.objectOf({
-      one: Types.string.isRequired,
-    }),
-  person,
-  ko: person,
-  });
-  console.log(an().validate(data));
-  console.log(an().getJsonSpec());
+const person = Types.objectOf({
+  call: Types.string.isRequired,
+  love: Types.number,
+})
 
-  //intersect(person, data);
+let an = Types.objectOf({
+  
+  name: Types.bool.isRequired,
+  friends: Types.arrayOf(Types.number.isRequired).isRequired,
+  age: Types.number,
+  adrress: Types.objectOf({
+    one: Types.string.isRequired,
+  }),
+ person,
+ ko: person,
+});
 
-  //console.log(person().validate(data));
-*/
+
+
+
+
+
+
+console.log(an().validate(data));
+console.log(an().getJsonSpec());
+
+//intersect(person, data);
+
+console.log(person().validate(data));
