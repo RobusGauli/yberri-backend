@@ -153,7 +153,6 @@ function createPrimitiveTypeChecker(expectedType) {
       }
     })();
   }
-  
   const validatorFunction = validate.bind(null, false);
   validatorFunction.isRequired = validate.bind(null, true);
   return validatorFunction;
@@ -190,15 +189,5 @@ let an = Types.objectOf({
  ko: person,
 });
 
-
-
-
-
-
-
 console.log(an().validate(data));
 console.log(an().getJsonSpec());
-
-//intersect(person, data);
-
-console.log(person().validate(data));
