@@ -13,11 +13,11 @@ const createRoutes = routes => (app) => {
 const initializeRoutes = createRoutes({
   '/home': {
     handler: createTable,
-    methods: ['POST']
+    methods: ['POST'],
   },
   '/home/shop': {
     handler: createTable,
-    methods: ['GET']
+    methods: ['GET'],
   },
 });
 
