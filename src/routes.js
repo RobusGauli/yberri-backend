@@ -8,6 +8,7 @@ const createRoutes = routes => (app) => {
     // get the key and
     app.route(key, value.handler, value.methods ? value.methods : ['GET']);
   });
+  return app;
 };
 
 const initializeRoutes = createRoutes({
