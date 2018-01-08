@@ -1,17 +1,17 @@
 const {
   createTable,
-} = require('./handlers')
+} = require('./handlers');
 
-const createRoutes = routes => app => {
-  //get the routes and write down
+const createRoutes = routes => (app) => {
+  // get the routes and write down
   Object.entries(routes).forEach(([key, value]) => {
-    //get the key and 
-    app.route(key, value.handler, value.methods ? value.methods : ['GET'])
-  })
-} 
+    // get the key and
+    app.route(key, value.handler, value.methods ? value.methods : ['GET']);
+  });
+};
 
 const initializeRoutes = createRoutes({
-  '/home' : {
+  '/home': {
     handler: createTable,
     methods: ['POST']
   },
@@ -24,4 +24,4 @@ const initializeRoutes = createRoutes({
 
 module.exports = {
   initializeRoutes,
-}
+};
