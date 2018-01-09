@@ -1,10 +1,10 @@
 const mongodb = require('mongodb');
 
-const dbInjector = dbUrl => async (handler, request, response, ...args) => {
+const dbInjector = (dbUrl, dbName) => async (handler, request, response, ...args) => {
   // we can inject the facin
   try {
     const client = await mongodb.connect(dbUrl);
-    const db = client.db('test');
+    const db = client.db(dbName);
     response.db = db;
     return Promise.resolve([handler, request, response, ...args]);   
   } catch (error) {

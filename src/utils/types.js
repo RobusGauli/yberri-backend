@@ -23,7 +23,18 @@ const Types = {
   objectOf: createObjectOfTypeChecker,
 };
 
-module.exports = Types;
+const jsonValidate = (typeObject, jsonData) => {
+  const message = typeObject().validate(jsonData);
+  const spec = typeObject().getJsonSpec();
+  const success = typeObject().checkSuccess(message);
+
+  return {
+    message,
+    spec,
+    success,
+  }
+}
+module.exports = { Types, jsonValidate };
 
 
 // here we will pass in the another type checker
@@ -34,6 +45,7 @@ function createArrayOfTypeChecker(typeChecker) {
         this.name = 'arrayOf';
         this.isRequired = isRequired;
         this.typeChecker = typeChecker;
+
       }
 
       validate(value) {
@@ -64,6 +76,13 @@ function createArrayOfTypeChecker(typeChecker) {
         }
         return [`${this.typeChecker().getJsonSpec()}`];
       }
+
+      checkSuccess(value) {
+        return value.reduce((acc, item) => {
+          const typeInstance = this.typeChecker();
+          return acc && (typeInstance.checkSuccess(item) || !this.isRequired);
+        }, true);
+      }
     })();
   }
 
@@ -75,7 +94,6 @@ function createArrayOfTypeChecker(typeChecker) {
 function createObjectOfTypeChecker(plainObject) {
   function validate(isRequired) {
     return new (class {
-
       constructor() {
         this.name = 'objectOf';
         this.isRequired = isRequired;
@@ -94,10 +112,10 @@ function createObjectOfTypeChecker(plainObject) {
         if (value === null || value === undefined || !typeof value === 'object') {
           return 'Warning! Object is not provided';
         }
-        const result = {};
         if (this.plainObject === undefined || this.plainObject === null) {
           throw new Error(`Cannot validate on ${this.plainObject}.`);
         }
+        const result = {};
         Object.entries(this.plainObject)
           .forEach(([key, val]) => {
             // get the value of the data
@@ -113,11 +131,18 @@ function createObjectOfTypeChecker(plainObject) {
         if (this.plainObject === undefined || this.plainObject === null) {
           throw new Error('Cannot Provide specification for empty Object');
         }
-        Object.entries(this.plainObject).forEach(([key, value]) => {
-          // 
+        Object.entries(this.plainObject).forEach(([key, value]) => { 
           specification[key] = value().getJsonSpec();
         });
         return specification;
+      }
+
+      checkSuccess(value) {
+        return Object.entries(this.plainObject).reduce((acc, [key, val]) => {
+          const data = value[key];
+          const typeInstance = val();
+          return acc && (typeInstance.checkSuccess(data) || !typeInstance.isRequired);
+        }, true);
       }
     })();
   }
@@ -151,6 +176,10 @@ function createPrimitiveTypeChecker(expectedType) {
       getJsonSpec() {
         return `${this.expectedType}`;
       }
+
+      checkSuccess(value) {
+        return value === 'Success' || !this.isRequired;
+      }
     })();
   }
   const validatorFunction = validate.bind(null, false);
@@ -159,35 +188,35 @@ function createPrimitiveTypeChecker(expectedType) {
 }
 
 
-const data = {
-  age: 1,
-  friends: 's',
-  adrress: {
-    one: "ASd",
-  },
-  person: {
-    love: 3,
-    call: 'loe is there'
-  }
-};
+// const data = {
+//   name: true,
+//   age: 1,
+//   friends: [1,2,3,4,5],
+//   adrress: {
+//     one: "ASd",
+//   },
+//   person: {
+//     love: 3,
+//     call: 'loe is there'
+//   }
+// };
 
 
-const person = Types.objectOf({
-  call: Types.string.isRequired,
-  love: Types.number,
-})
+// const person = Types.objectOf({
+//   call: Types.string.isRequired,
+//   love: Types.number,
+// })
 
-let an = Types.objectOf({
-  
-  name: Types.bool.isRequired,
-  friends: Types.arrayOf(Types.number.isRequired).isRequired,
-  age: Types.number,
-  adrress: Types.objectOf({
-    one: Types.string.isRequired,
-  }),
- person,
- ko: person,
-});
+// const  an = Types.objectOf({
+//   name: Types.bool.isRequired,
+//   friends: Types.arrayOf(Types.number.isRequired).isRequired,
+//   age: Types.number,
+//   adrress: Types.objectOf({
+//     one: Types.string.isRequired,
+//   }),
+// });
 
-console.log(an().validate(data));
-console.log(an().getJsonSpec());
+
+// const result = jsonValidate(an, data);
+// console.log(result);
+

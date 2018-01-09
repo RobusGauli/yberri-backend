@@ -12,7 +12,7 @@ const createRoutes = routes => (app) => {
 };
 
 const initializeRoutes = createRoutes({
-  '/home': {
+  '/tables': {
     handler: createTable,
     methods: ['POST'],
   },
