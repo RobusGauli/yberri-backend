@@ -1,5 +1,10 @@
-const { createTable } = require('./table');
+const { 
+  createTable,
+  getTables,
+} = require('./table');
 
 module.exports = {
   createTable,
-}
+  getTables,
+};
+

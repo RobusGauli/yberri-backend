@@ -1,26 +1,35 @@
 const {
   createTable,
+  getTables,
 } = require('./handlers');
 
 const createRoutes = routes => (app) => {
   // get the routes and write down
-  Object.entries(routes).forEach(([key, value]) => {
+  routes.forEach((value) => {
     // get the key and
-    app.route(key, value.handler, value.methods ? value.methods : ['GET']);
+    //console.log(value[1]);
+    app.route(value.path, value.handler, value.methods ? value.methods : ['GET']);
   });
   return app;
 };
 
-const initializeRoutes = createRoutes({
-  '/tables': {
+const initializeRoutes = createRoutes([
+  {
+    path: '/tables',
     handler: createTable,
     methods: ['POST'],
   },
-  '/home/shop': {
+  {
+    path: '/home/shop',
     handler: createTable,
     methods: ['GET'],
   },
-});
+  {
+    path: '/tables',
+    handler: getTables,
+    methods: ['GET'],
+  },
+]);
 
 
 module.exports = {

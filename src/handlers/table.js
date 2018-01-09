@@ -112,9 +112,13 @@ async function createTable(request, response) {
 async function getTables(request, response) {
   // this handle just get all the elements from the tables and do its thing
   const { db } = response;
+  const fs = require('fs');
+
   try {
-    const r = await db.collection('tables').find();
-    response.jsonify(r);
+    const cursor = await db.collection('tables').find();
+    const data = await cursor.toArray();
+    response.jsonify(successPayload(data));
+
   } catch (error) {
     console.log(error);
     response.end(JSON.stringify(unknownError));
