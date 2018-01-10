@@ -1,6 +1,8 @@
 const {
   createTable,
   getTables,
+  getTable,
+  updateTable,
 } = require('./handlers');
 
 const createRoutes = routes => (app) => {
@@ -28,6 +30,16 @@ const initializeRoutes = createRoutes([
     path: '/tables',
     handler: getTables,
     methods: ['GET'],
+  },
+  {
+    path: '/tables/<tableName>',
+    handler: getTable,
+    methods: ['GET'],
+  },
+  {
+    path: '/tables/<tableName>',
+    handler: updateTable,
+    methods: ['PUT'],
   },
 ]);
 
