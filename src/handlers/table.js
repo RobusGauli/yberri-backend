@@ -1,5 +1,6 @@
 
 const { Types, jsonValidate } = require('../utils/types');
+const envelop = require('../utils/envelop');
 const { MongoError } = require('mongodb'); 
 
 class DataNotFoundError extends Error {
@@ -20,66 +21,6 @@ const tableFormatType = Types.objectOf({
   tableName: Types.string.isRequired,
 }).isRequired;
 
-const invalidJsonError = {
-  status: 'fail',
-  success: false,
-  message: 'Failed to parse JSON',
-  data: null,
-  code: 400,
-};
-
-const unknownError = {
-  status: 'fail',
-  success: false,
-  message: 'Unknown Error',
-  data: null,
-  code: 400,
-};
-
-const invalidFieldError = (message, spec) => ({
-  status: 'fail',
-  message: 'Json field Validation Error',
-  data: null,
-  success: false,
-  errorMessage: message,
-  requiredJsonSpec: spec,
-  code: 400,
-});
-
-const duplicateDataError = data => ({
-  status: 'fail',
-  message: 'Duplicate Key',
-  data: null,
-  success: false,
-  errorMessage: `${data} already exists.`,
-  code: 400,
-});
-
-const dataNotFoundError = data => ({
-  status: 'fail',
-  message: 'Data not found',
-  data: null,
-  success: false,
-  errorMessage: `${data} does not exists`,
-  code: 400,
-});
-
-const successPayload = data => ({
-  status: 'success',
-  success: true,
-  data,
-  code: 200,
-});
-
-const updateFailureError = data => ({
-  status: 'fail',
-  message: 'Data not found',
-  data: null,
-  success: false,
-  errorMessage: `Cannot update because ${data} does not exists.`,
-  code: 400,
-});
-
 function parseAndCheckJsonType(func) {
   return (request, response) => {
     const { body } = response;
@@ -96,18 +37,15 @@ function parseAndCheckJsonType(func) {
         request.parsedBody = parsedBody;
         return func(request, response);
       } 
-      response.writeHead(400, {
-        'Content-Type': 'application/json',
-      });
-      response.end(JSON.stringify(invalidFieldError(message, spec)));
+      response.badRequestError(envelop.requestValidationError({
+        requiredJsonSpec: spec,
+        validationMessage: message,
+      }));
     } catch (error) {
-      response.writeHead(404, {
-        'Content-Type': 'application/json',
-      });
       if (error instanceof SyntaxError) {
-        response.end(JSON.stringify(invalidJsonError));
+        response.badRequestError(envelop.invalidJSONError());
       } else {
-        response.end(JSON.stringify(unknownError));
+        response.internalServerError(envelop.unknownError());
       }
     }
   };
@@ -124,21 +62,15 @@ async function createTable(request, response) {
   try {
     coll.createIndex({ tableNameInternal: 1 }, { unique: true });
     await coll.insertOne(toInsertDocument);
-    response.jsonify(successPayload(parsedBody));
+    response.jsonify(envelop.dataEnvelop(parsedBody));
   } catch (error) {
     if (error instanceof MongoError) {
       if (error.code === 11000) {
         // that means we have a duplicate key
-        response.writeHead(400, {
-          'Content-Type': 'application/json',
-        });
-        response.end(JSON.stringify(duplicateDataError(parsedBody.tableName)));
+        response.badRequestError(envelop.duplicateValueError(parsedBody.tableName));
       }
     } else {
-      response.writeHead(400, {
-        'Content-Type': 'application/json',
-      });
-      response.end(JSON.stringify(unknownError));
+      response.internalServerError(envelop.unknownError());
     }
   }
 }
@@ -149,11 +81,10 @@ async function getTables(request, response) {
   try {
     const cursor = await db.collection('tables').find();
     const data = await cursor.toArray();
-    response.jsonify(successPayload(data));
+    response.jsonify(envelop.dataEnvelop(data));
 
   } catch (error) {
-    console.log(error);
-    response.end(JSON.stringify(unknownError));
+    response.internalServerError(envelop.unknownError());
   }
 }
 
@@ -166,18 +97,12 @@ async function getTable(request, response) {
     if (document === null) {
       throw new DataNotFoundError('Not found');
     }
-    response.jsonify(successPayload(document));
+    response.jsonify(envelop.dataEnvelop(document));
   } catch (error) {
     if (error instanceof DataNotFoundError) {
-      response.writeHead(400, {
-        'Content-Type': 'json/application',
-      });
-      response.end(JSON.stringify(dataNotFoundError(tableName)));
+      response.badRequestError(envelop.notFoundError(tableName));
     } else {
-      response.writeHead(400, {
-        'Content-Type': 'json/application',
-      });
-      response.end(JSON.stringify(unknownError));
+      response.internalServerError(envelop.unknownError());
     }
   }
 }
@@ -205,21 +130,21 @@ async function updateTable(request, response) {
     ];
 
     const updatedDocument = await coll.findOneAndUpdate(...mongoQueryObject);
+    
     if (updatedDocument.value === null) {
       throw new UpdateFailureError('Update Failure');
     }
-    response.jsonify(successPayload(updatedDocument));
+    response.jsonify(envelop.dataEnvelop(updatedDocument));
   } catch (error) {
     if (error instanceof UpdateFailureError) {
-      response.writeHead(400, {
-        'Content-Type': 'json/application',
-      });
-      response.end(JSON.stringify(updateFailureError(tableName)));
+      response.badRequestError(envelop.cannotUpdateError(tableName));
+    } else if (error instanceof MongoError) {
+      // new value matches the current unique value in db
+      if (error.code === 11000) {
+        response.badRequestError(envelop.duplicateValueError(parsedBody.tableName));
+      }
     } else {
-      response.writeHead(400, {
-        'Content-Type': 'json/application',
-      });
-      response.end(JSON.stringify(unknownError));
+      response.internalServerError(envelop.unknownError());
     }
   }
 }
