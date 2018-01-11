@@ -60,6 +60,9 @@ class _RestGenerator {
   }
 };
 
+updateFor(model, path) {
+  const { }
+}
 const RestGenerator = app => new _RestGenerator(app);
 
 module.exports = {

@@ -10,6 +10,7 @@
   "author": "Robus Gauli",
   "license": "ISC",
   "dependencies": {
+    "assert": "^1.4.1",
     "mongodb": "^3.0.1",
     "yberri": "^1.4.0"
   },
