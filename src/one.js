@@ -1,20 +1,23 @@
+// const mongo = require('mongodb');
 
-function Ranger(start, end) {
-  this.start = end === undefined ? 0 : start;
-  this.end = end !== undefined ? end : start;
-}
+// const url = 'mongodb://localhost:27017';
+// (async function test() {
 
-Ranger.prototype.values = function values() {
-  const results = [];
-  for (let i = this.start; i < this.end; i++ ) {
-    results.push(i);
-  }
-  return results;
-};
+//   const client = await mongo.connect(url);
+//   const db = client.db('restaurant');
+//   const collection = db.collection('tables');
+//   //console.log(db);
+//   const cursor = await collection.find({}, {projection: {tableName: true, _id: false}, skip: 2, limit: 2})
+//   console.log( await cursor.toArray());
+// })()
 
-Ranger.prototype[Symbol.iterator] = function* gen() {
-  for (let i = this.start; i < this.end; i++) {
-    yield i;
-  }
-};
 
+const func = predicate => value => predicate(value);
+
+const isOdd = func(x => x % 2 != 0);
+
+console.log(isOdd(3))
+const getOdds = alist => alist.filter(isOdd);
+
+
+console.log(getOdds([3,4,4,6]));
