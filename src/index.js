@@ -23,6 +23,8 @@ const app = Yberri();
 
 const restGenerator = RestGenerator(app);
 restGenerator.postFor(CategoryModel, '/category');
+restGenerator.updateFor(CategoryModel, '/category');
+restGenerator.getFor(CategoryModel, '/category');
 
 
 initializeRoutes(app)
