@@ -2,7 +2,7 @@ const process = require('process');
 const { Yberri, bodyParserMiddleware } = require('yberri');
 const { initializeRoutes } = require('./routes');
 const { dbInjector } = require('./middlewares');
-const { RestGenerator } = require('./handlers/restgenerator');
+const { RestGenerator } = require('./generator/restgenerator');
 
 // Models
 
@@ -22,10 +22,7 @@ const port = PORT || DEFAULT_PORT;
 const app = Yberri();
 
 const restGenerator = RestGenerator(app);
-restGenerator.postFor(CategoryModel, '/category');
-restGenerator.updateFor(CategoryModel, '/category');
-restGenerator.getFor(CategoryModel, '/category');
-
+restGenerator.restFor(CategoryModel, '/category');
 
 initializeRoutes(app)
   .applyMiddleware(dbInjector(DBURL, DBNAME))

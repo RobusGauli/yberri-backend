@@ -28,6 +28,7 @@ function parseAndCheckJsonType(func, payloadType) {
         response.internalServerError(envelop.unknownError());
       }
     }
+    return null; // to silent the es-lint
   };
 }
 

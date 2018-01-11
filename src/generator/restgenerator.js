@@ -1,14 +1,28 @@
 const { Types } = require('../utils/types');
-const { parseAndCheckJsonType } = require('./decorators');
+const { parseAndCheckJsonType } = require('../decorators');
 const { MongoError, ObjectID } = require('mongodb');
 const envelop = require('../utils/envelop');
+
+const methodRegistry = {};
+
+// decorator function that registers the method
+const register = path => (func) => {
+  methodRegistry[path] = func;
+  return func;
+};
 
 class _RestGenerator {
   constructor(app) {
     // app instance so that we can route the handler efficiently
     this.app = app;
+    // decorator feature not available in plain es5 so here you go
+    this.postFor = register('POST')(this.postFor);
+    this.getFor = register('GET')(this.getFor);
+    this.deleteFor = register('DELETE')(this.deleteFor);
+    this.updateFor = register('PUT')(this.updateFor);
   }
 
+  
   postFor(model, path) {
     const { payloadType, collection: __collectionName, index } = model; 
     async function postHandler(request, response) {
@@ -133,14 +147,44 @@ class _RestGenerator {
 
     this.app.route(`${path}/<_id>`, jsonParseCheckDecorator(updateResourceHandler), ['PUT']);
   }
+
+  deleteFor(model, path) {
+    const { collection: __collectionName } = model;
+
+    async function deleteResourceHandler(request, response) {
+      // db instance
+      const { db } = response;
+      const { _id } = request.variablePath;
+
+      const collection = db.collection(__collectionName);
+      const query = {
+        _id: ObjectID.createFromHexString(_id),
+      }
+      try {
+        const doc = await collection.findOneAndDelete(query);
+        console.log(doc)
+        response.jsonify(envelop.dataEnvelop(doc));
+      } catch (error) {
+        console.log(error);
+        response.badRequestError(envelop.unknownError);
+      }
+    }
+    this.app.route(`${path}/<_id>`, deleteResourceHandler, ['DELETE']);
+  }
+
+  restFor(model, path, methods = ['GET', 'POST', 'PUT', 'DELETE']) {
+    if (Array.isArray(methods)) {
+      methods.forEach((methodName) => {
+        let func = methodRegistry[methodName];
+        
+        if (typeof func === 'function') {
+          func = func.bind(this); // bind the function to this context
+          func(model, path);
+        }
+      });
+    }
+  }
 }
-
-const RestGenerator = app => 
-  new _RestGenerator(app);
-
-module.exports = {
-  RestGenerator,
-};
 
 const jsonParseCheckDecorator = func => (request, response) => {
   // get the body from the response
@@ -155,3 +199,10 @@ const jsonParseCheckDecorator = func => (request, response) => {
     response.badRequestError(envelop.invalidJSONError());
   }
 }
+
+const RestGenerator = app =>
+  new _RestGenerator(app);
+
+module.exports = {
+  RestGenerator,
+};

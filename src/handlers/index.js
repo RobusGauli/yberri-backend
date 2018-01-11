@@ -3,7 +3,7 @@ const {
   getTables,
   getTable,
   updateTable,
-} = require('./table');
+} = require('./table.handler');
 
 module.exports = {
   createTable,

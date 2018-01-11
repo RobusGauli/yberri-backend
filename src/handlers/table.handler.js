@@ -1,7 +1,7 @@
 
 const { Types } = require('../utils/types');
 const envelop = require('../utils/envelop');
-const { parseAndCheckJsonType } = require('./decorators');
+const { parseAndCheckJsonType } = require('../decorators');
 const { MongoError } = require('mongodb'); 
 
 class DataNotFoundError extends Error {
