@@ -1,5 +1,20 @@
-const { CategoryModel } = require('./category.model');
+const { Category } = require('./category.model');
+const { Employee } = require('./employee.model');
+const { EmployeePosition } = require('./employeeposition.model');
+const { Item } = require('./item.model');
+const { ServiceCharge } = require('./servicecharge.model');
+const { Table } = require('./table.model');
+const { Tax } = require('./tax.model');
+const { Vat } = require('./vat.model');
+
 
 module.exports = {
-  CategoryModel,
+  Category,
+  Item,
+  EmployeePosition,
+  Employee,
+  Table,
+  ServiceCharge,
+  Tax,
+  Vat,
 };

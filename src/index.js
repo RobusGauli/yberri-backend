@@ -6,8 +6,7 @@ const { RestGenerator } = require('./generator/restgenerator');
 
 // Models
 
-const { CategoryModel } = require('./models');
-
+const models = require('./models');
 
 const DBURL = 'mongodb://localhost:27017';
 const DBNAME = 'restaurant';
@@ -22,7 +21,10 @@ const port = PORT || DEFAULT_PORT;
 const app = Yberri();
 
 const restGenerator = RestGenerator(app);
-restGenerator.restFor(CategoryModel, '/category');
+
+Object.values(models).forEach((model) => {
+  restGenerator.restFor(model, `/${model.collection}`);
+});
 
 initializeRoutes(app)
   .applyMiddleware(dbInjector(DBURL, DBNAME))

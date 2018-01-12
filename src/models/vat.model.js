@@ -1,18 +1,14 @@
 const { Types } = require('../utils/types');
 
-
-const Category = {
-  collection: 'categories',
+const Vat = {
+  collection: 'vats',
   payloadType: Types.objectOf({
     name: Types.string.isRequired,
+    value: Types.string.isRequired,
+    isActive: Types.bool.isRequired,
   }),
-  index: {
-    fields: ['name'],
-    unique: true,
-  },
 };
 
 module.exports = {
-  Category,
+  Vat,
 };
-

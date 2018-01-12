@@ -1,10 +1,11 @@
 const { Types } = require('../utils/types');
 
-
-const Category = {
-  collection: 'categories',
+const EmployeePosition = {
+  collection: 'employeepositions',
   payloadType: Types.objectOf({
     name: Types.string.isRequired,
+    description: Types.string,
+    isActive: Types.bool.isRequired,
   }),
   index: {
     fields: ['name'],
@@ -13,6 +14,5 @@ const Category = {
 };
 
 module.exports = {
-  Category,
+  EmployeePosition,
 };
-
