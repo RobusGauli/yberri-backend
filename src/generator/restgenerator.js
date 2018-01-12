@@ -64,10 +64,51 @@ class _RestGenerator {
       const collection = db.collection(__collectionName);
       try {
         const cursor = await collection.find();
-        const data = await cursor.toArray();
+        let data = await cursor.toArray();
+        // if there is any relationship go through the relationship
+        
+        if (model.relationships) {
+          // then we have a relatiosn
+          
+          for (const [key, value] of Object.entries(model.relationships)) {
+            // lets do for all the items
+            if (!value.rel) {
+              throw new Error('Please provide the relationship description using "rel".')
+            }
+            if (value.rel === 'onetomany') {
+              // this means that each item in the list has multiple children of this relationship
+              // so what we do is iterate over the data array and find its id
+              const mdata = [];
+              for (const item of data) {
+                // get the id of item
+                // sequenctial later change in paraller execution
+                // using the map
+                const resultCursor = await db.collection(value.collectionName).find({ [ value.foreignKey ] : item._id.toHexString()});
+                const resultArray = await resultCursor.toArray();
+                mdata.push({ ...item, [key]: resultArray });
+              }
+              data = mdata;
+
+            } else if (value.rel === 'manytoone') {
+              // there is only on related item
+              const mdata = [];
+              for (const item of data) {
+                let result = null;
+                if (ObjectID.isValid(item[value.foreignKey])) {
+                  result = await db.collection(value.collectionName)
+                  .findOne({ _id : ObjectID.createFromHexString(item[value.foreignKey]) });
+                }
+                mdata.push({ ...item, [ key ] : result });
+              }
+              data = mdata;
+            }
+
+          }
+        }
         response.jsonify(envelop.dataEnvelop(data));
     
       } catch (error) {
+        console.log(error);
         response.internalServerError(envelop.unknownError());
       }
     }
@@ -198,6 +239,13 @@ const jsonParseCheckDecorator = func => (request, response) => {
   } catch (error) {
     response.badRequestError(envelop.invalidJSONError());
   }
+}
+
+const resolveRelationship = (db, value) => (item) => {
+  // get the id of item
+  const itemId = item._id;
+  const resultCursor = db.collection(value.collectionName).find({ [ value.foreignKey ] : itemId }).toArray();
+  return resultCursor;
 }
 
 const RestGenerator = app =>

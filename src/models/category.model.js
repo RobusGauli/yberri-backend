@@ -14,6 +14,7 @@ const Category = {
     items: {
       collectionName: 'items',
       rel: 'onetomany',
+      foreignKey: 'categoryId'
     },
   },
 };
