@@ -17,10 +17,11 @@ class UpdateFailureError extends Error {
     this.error = errorText;
   }
 }
-
-const tableFormatType = Types.objectOf({
-  tableName: Types.string.isRequired,
-}).isRequired;
+const tableFormatType =  Types.objectOf({
+  name: Types.string.isRequired,
+  capacity: Types.number.isRequired,
+  isActive: Types.bool.isRequired,
+})
 
 async function createTable(request, response) {
   const { db } = response;

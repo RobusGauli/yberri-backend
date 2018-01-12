@@ -6,15 +6,19 @@ const Item = {
     name: Types.string.isRequired,
     photoUri: Types.string,
     unitPrice: Types.string.isRequired,
-    category: Types.objectOf({
-      categoryName: Types.string.isRequired,
-      categoryId: Types.string.isRequired,
-    }).isRequired,
+    categoryId: Types.string.isRequired,
     isActive: Types.bool.isRequired,
   }),
   index: {
     fields: ['name'],
     unique: true,
+  },
+  relationships: {
+    category: {
+      collectionName: 'categories',
+      rel: 'manytoone',
+      foreignKey: 'categoryId',
+    },
   },
 };
 

@@ -5,7 +5,7 @@ const Table = {
   payloadType: Types.objectOf({
     name: Types.string.isRequired,
     capacity: Types.number.isRequired,
-    active: Types.bool.isRequired,
+    isActive: Types.bool.isRequired,
   }),
   index: {
     fields: ['name'],

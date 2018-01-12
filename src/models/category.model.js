@@ -10,6 +10,12 @@ const Category = {
     fields: ['name'],
     unique: true,
   },
+  relationships: {
+    items: {
+      collectionName: 'items',
+      rel: 'onetomany',
+    },
+  },
 };
 
 module.exports = {
