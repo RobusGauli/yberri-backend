@@ -7,6 +7,8 @@ const { Table } = require('./table.model');
 const { Tax } = require('./tax.model');
 const { Vat } = require('./vat.model');
 
+const { Drink } = require('./drinks.model');
+
 
 module.exports = {
   Category,
@@ -17,4 +19,5 @@ module.exports = {
   ServiceCharge,
   Tax,
   Vat,
+  Drink,
 };

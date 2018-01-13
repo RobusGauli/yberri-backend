@@ -5,6 +5,8 @@ module.exports = {
       "no-plusplus": ["off"],
       "no-restricted-syntax": ["off"],
       "no-console": ["off"],
-      "no-func-assign": ["off"]
+      "no-func-assign": ["off"],
+      "no-await-in-loop": ["off"],
+      "key-spacing": ["off"],
   }
 };

@@ -24,7 +24,7 @@ class _RestGenerator {
 
   
   postFor(model, path) {
-    const { payloadType, collection: __collectionName, index } = model; 
+    const { payloadType, collection: __collectionName, index } = model;
     async function postHandler(request, response) {
       const { db } = response;
       const { parsedBody } = request;
@@ -32,7 +32,7 @@ class _RestGenerator {
       const collection = db.collection(__collectionName);
       if (index) {
         const indexFields = index.fields.reduce((acc, val) =>
-          ({ ...acc, [ val ] : 1 }), {});
+          ({ ...acc, [val] : 1 }), {});
         collection.createIndex(indexFields, {unique: index.unique ? index.unique : false })
       }
 
@@ -43,6 +43,7 @@ class _RestGenerator {
         if (error instanceof MongoError) {
           if (error.code === 11000) {
             // that means we have a duplicate key
+            console.log(error);
             response.badRequestError(envelop.duplicateValueError(parsedBody));
           } else {
             response.internalServerError(envelop.unknownError());
@@ -58,13 +59,14 @@ class _RestGenerator {
 
   getFor(model, path) {
     const { collection: __collectionName } = model;
-    
+
     async function getResourcesHandler(request, response) {
       // this handle just get all the elements from the tables and do its thing
       const { db } = response;
       const collection = db.collection(__collectionName);
       try {
         const cursor = await collection.find();
+        // use meaningn variable naming instead of data
         let data = await cursor.toArray();
         // if there is any relationship go through the relationship
         
@@ -89,6 +91,7 @@ class _RestGenerator {
                 mdata.push({ ...item, [key]: resultArray });
               }
               data = mdata;
+              console.log(data);
 
             } else if (value.rel === 'manytoone') {
               // there is only on related item
@@ -97,13 +100,12 @@ class _RestGenerator {
                 let result = null;
                 if (ObjectID.isValid(item[value.foreignKey])) {
                   result = await db.collection(value.collectionName)
-                  .findOne({ _id : ObjectID.createFromHexString(item[value.foreignKey]) });
+                    .findOne({ _id : ObjectID.createFromHexString(item[value.foreignKey]) });
                 }
-                mdata.push({ ...item, [ key ] : result });
+                mdata.push({ ...item, [key] : result });
               }
               data = mdata;
             }
-
           }
         }
         response.jsonify(envelop.dataEnvelop(data));
@@ -240,13 +242,6 @@ const jsonParseCheckDecorator = func => (request, response) => {
   } catch (error) {
     response.badRequestError(envelop.invalidJSONError());
   }
-}
-
-const resolveRelationship = (db, value) => (item) => {
-  // get the id of item
-  const itemId = item._id;
-  const resultCursor = db.collection(value.collectionName).find({ [ value.foreignKey ] : itemId }).toArray();
-  return resultCursor;
 }
 
 const RestGenerator = app =>

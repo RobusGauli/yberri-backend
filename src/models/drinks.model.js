@@ -1,30 +1,25 @@
 const { Types } = require('../utils/types');
 
-
-const Category = {
-  collection: 'categories',
+const Drink = {
+  collection: 'drinks',
   payloadType: Types.objectOf({
     name: Types.string.isRequired,
+    categoryId: Types.string.isRequired,
+    isActive: Types.bool,
   }),
   index: {
     fields: ['name'],
     unique: true,
   },
   relationships: {
-    items: {
-      collectionName: 'items',
-      rel: 'onetomany',
-      foreignKey: 'categoryId',
-    },
-    drinks: {
-      collectionName: 'drinks',
-      rel: 'onetomany',
+    category: {
+      collectionName: 'categories',
+      rel: 'manytoone',
       foreignKey: 'categoryId',
     },
   },
 };
 
 module.exports = {
-  Category,
+  Drink,
 };
-

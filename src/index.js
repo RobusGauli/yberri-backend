@@ -1,6 +1,5 @@
 const process = require('process');
 const { Yberri, bodyParserMiddleware } = require('yberri');
-const { initializeRoutes } = require('./routes');
 const { dbInjector } = require('./middlewares');
 const { RestGenerator } = require('./generator/restgenerator');
 
@@ -26,7 +25,7 @@ Object.values(models).forEach((model) => {
   restGenerator.restFor(model, `/${model.collection}`);
 });
 
-initializeRoutes(app)
+app
   .applyMiddleware(dbInjector(DBURL, DBNAME))
   .applyMiddleware(bodyParserMiddleware)
   .run(host, port);
