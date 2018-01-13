@@ -58,6 +58,7 @@ class _RestGenerator {
 
   getFor(model, path) {
     const { collection: __collectionName } = model;
+    
     async function getResourcesHandler(request, response) {
       // this handle just get all the elements from the tables and do its thing
       const { db } = response;
