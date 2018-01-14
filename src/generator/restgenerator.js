@@ -3,7 +3,7 @@ const { parseAndCheckJsonType } = require('../decorators');
 const { MongoError, ObjectID } = require('mongodb');
 const envelop = require('../utils/envelop');
 
-const methodRegistry = {};
+const methodRegistry = {}
 
 // decorator function that registers the method
 const register = path => (func) => {
