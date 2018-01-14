@@ -12,6 +12,9 @@ const USERNAME_OR_PASSWORD_NOT_MATCH_MESSAGE = 'The username or password does no
 const TOKEN_EXPIRE_ERROR = 'TOKEN_EXPIRE_ERROR';
 const TOKEN_EXPIRE_ERROR_MESSAGE = 'Token is expired';
 
+const AUTHENTICATION_ERROR = 'AUTHENTICATION_ERROR';
+const AUTHENTICATION_ERROR_MESSAGE = 'The resource you are trying to access is unauthorized.'
+
 class Envelop {
   constructor(code, success, status, data) {
     this.code = code;
@@ -54,4 +57,8 @@ module.exports = {
     TOKEN_EXPIRE_ERROR,
     TOKEN_EXPIRE_ERROR_MESSAGE,
   ).stringify(),
+  autheticationError: errorEnvelop(
+    AUTHENTICATION_ERROR,
+    AUTHENTICATION_ERROR_MESSAGE,
+  )
 };

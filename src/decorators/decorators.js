@@ -2,6 +2,9 @@ const { jsonValidate } = require('../utils/types');
 const envelop = require('../utils/envelop');
 
 function parseAndCheckJsonType(func, payloadType) {
+  if (payloadType === undefined) {
+    throw new Error('Please pass the valid JSON type.');
+  }
   return (request, response) => {
     const { body } = response;
     try {
@@ -22,6 +25,7 @@ function parseAndCheckJsonType(func, payloadType) {
         validationMessage: message,
       }));
     } catch (error) {
+      console.log(error);
       if (error instanceof SyntaxError) {
         response.badRequestError(envelop.invalidJSONError());
       } else {

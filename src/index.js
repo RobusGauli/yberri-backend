@@ -2,7 +2,7 @@ const process = require('process');
 const { Yberri, bodyParserMiddleware } = require('yberri');
 const { dbInjector } = require('./middlewares');
 const { RestGenerator } = require('./generator/restgenerator');
-
+const { registerUser, loginUser } = require('./authentication');
 // Models
 
 const models = require('./models');
@@ -18,11 +18,12 @@ const host = LOCALHOST || DEFAULT_HOST;
 const port = PORT || DEFAULT_PORT;
 
 const app = Yberri();
-
+app.route('/register', registerUser, ['POST']);
+app.route('/login', loginUser, ['POST']);
 const restGenerator = RestGenerator(app);
 
 Object.values(models).forEach((model) => {
-  restGenerator.restFor(model, `/${model.collection}`);
+  restGenerator.restFor(model, `/${model.collection}`, true);
 });
 
 app

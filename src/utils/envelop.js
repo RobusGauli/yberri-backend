@@ -6,6 +6,13 @@ const NOT_FOUND_ERROR = 'NOT_FOUND_ERROR';
 const CANNOT_UPDATE_ERROR = 'CANNOT_UPDATE_ERROR';
 const UNKNOWN_ERROR = 'UNKOWN_ERROR';
 
+// AUTHENTICATION ERROR
+
+const USER_NOT_FOUND_ERROR = 'USER_NOT_FOUND_ERROR';
+const USER_ALREADY_REGISTERED = 'USER_ALREADY_REGISTERED';
+const USERNAME_OR_PASSWORD_NOT_MATCH = 'USERNAME_OR_PASSWORD_NOT_MATCH';
+const TOKEN_EXPIRE_ERROR = 'TOKEN_EXPIRE_ERROR';
+
 class Envelop {
   constructor(code, success, status, data) {
     this.code = code;
@@ -62,8 +69,8 @@ const cannotUpdateError = value =>
 
 // DATA ENVELOP
 
-const dataEnvelop = data =>
-  (new DataEnvelop(data))
+const dataEnvelop = (data, message = null) =>
+  (new DataEnvelop(data, message))
     .stringify();
 
 

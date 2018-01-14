@@ -1,4 +1,4 @@
-const { Types } = require('../utils/types');
+const { authenticateDecorator } = require('../authentication/decorators');
 const { parseAndCheckJsonType } = require('../decorators');
 const { MongoError, ObjectID } = require('mongodb');
 const envelop = require('../utils/envelop');
@@ -23,7 +23,7 @@ class _RestGenerator {
   }
 
   
-  postFor(model, path) {
+  postFor(model, path, authentication) {
     const { payloadType, collection: __collectionName, index } = model;
     async function postHandler(request, response) {
       const { db } = response;
@@ -54,10 +54,14 @@ class _RestGenerator {
       }
 
     }
-    this.app.route(path, parseAndCheckJsonType(postHandler, payloadType), ['POST']);
+    let handler = parseAndCheckJsonType(postHandler, payloadType);
+    if (authentication === true) {
+      handler = authenticateDecorator(handler);
+    }
+    this.app.route(path, handler, ['POST']);
   }
 
-  getFor(model, path) {
+  getFor(model, path, authentication) {
     const { collection: __collectionName } = model;
 
     async function getResourcesHandler(request, response) {
@@ -130,13 +134,16 @@ class _RestGenerator {
         response.internalServerError(envelop.unknownError());
       }
     }
-
+    if (authentication === true) {
+      getResourceHandler = authenticateDecorator(getResourceHandler);
+      getResourcesHandler = authenticateDecorator(getResourcesHandler);
+    }
     this.app.route(path, getResourcesHandler, ['GET']);
     this.app.route(`${path}/<_id>`, getResourceHandler, ['GET']);
   }
 
 
-  updateFor(model, path) {
+  updateFor(model, path, authentication) {
     const { collection: __collectionName } = model;
 
     // get the id path from the url
@@ -188,11 +195,14 @@ class _RestGenerator {
         }
       }
     }
-
-    this.app.route(`${path}/<_id>`, jsonParseCheckDecorator(updateResourceHandler), ['PUT']);
+    let handler = jsonParseCheckDecorator(updateResourceHandler);
+    if (authentication) {
+      handler = authenticateDecorator(handler);
+    }
+    this.app.route(`${path}/<_id>`, handler, ['PUT']);
   }
 
-  deleteFor(model, path) {
+  deleteFor(model, path, authentication) {
     const { collection: __collectionName } = model;
 
     async function deleteResourceHandler(request, response) {
@@ -213,17 +223,20 @@ class _RestGenerator {
         response.badRequestError(envelop.unknownError);
       }
     }
+    if (authentication) {
+      deleteResourceHandler = authenticateDecorator(deleteResourceHandler);
+    }
     this.app.route(`${path}/<_id>`, deleteResourceHandler, ['DELETE']);
   }
 
-  restFor(model, path, methods = ['GET', 'POST', 'PUT', 'DELETE']) {
+  restFor(model, path, authentication = false, methods = ['GET', 'POST', 'PUT', 'DELETE']) {
     if (Array.isArray(methods)) {
       methods.forEach((methodName) => {
         let func = methodRegistry[methodName];
         
         if (typeof func === 'function') {
           func = func.bind(this); // bind the function to this context
-          func(model, path);
+          func(model, path, authentication);
         }
       });
     }

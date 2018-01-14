@@ -5,15 +5,26 @@ const jwt = require('jsonwebtoken');
 const { parseAndCheckJsonType } = require('../decorators');
 const bcrypt = require('bcrypt');
 const { MongoError } = require('mongodb');
-
 const error = require('./error');
+
 
 const SALT_ROUNDS = 10; // default
 
 // db setting
 const COLLECTION_NAME = 'users';
-// payloads
 
+// jwt setting
+const JWT_SECRET = 'YBERRIWILLROCKTHEFLOOR';
+const ALGORITHM = 'HS256';
+const EXPIRY = '7d';
+
+function generateJwt(userName) {
+  const payload = {
+    userName,
+  };
+  const token = jwt.sign(payload, JWT_SECRET, { expiresIn: EXPIRY, algorithm: ALGORITHM });
+  return token;
+};
 
 const RegisterPayload = Types.objectOf({
   userName: Types.string.isRequired,
@@ -102,7 +113,6 @@ async function registerUser(request, response) {
       'Successfully Registered',
     ));
   } catch (_error) {
-    
     if (_error instanceof MongoError) {
       response.badRequestError(error.userAlreadyRegistered);
     } else {
@@ -137,7 +147,7 @@ async function loginUser(request, response) {
             doc.firstName,
             doc.lastName,
             doc.middleName,
-            'token',
+            generateJwt(doc.userName),
           ),
           'Login Successfull',
         ));
@@ -146,6 +156,7 @@ async function loginUser(request, response) {
       }
     }
   } catch (_error) {
+    console.log(_error);
     response.internalServerError(envelop.unknownError());
   }
 
@@ -159,4 +170,5 @@ module.exports = {
   registerUser,
   loginUser,
   User,
+  JWT_SECRET,
 };
