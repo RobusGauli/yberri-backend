@@ -9,7 +9,7 @@ const createRoutes = routes => (app) => {
   // get the routes and write down
   routes.forEach((value) => {
     // get the key and
-    //console.log(value[1]);
+    // console.log(value[1]);
     app.route(value.path, value.handler, value.methods ? value.methods : ['GET']);
   });
   return app;
