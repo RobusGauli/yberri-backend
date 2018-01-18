@@ -3,7 +3,7 @@ const { Yberri, bodyParserMiddleware } = require('yberri');
 const { dbInjector } = require('./middlewares');
 const { RestGenerator } = require('./generator/restgenerator');
 const { registerUser, loginUser } = require('./authentication');
-// Models
+// models
 
 const models = require('./models');
 
