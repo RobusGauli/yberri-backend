@@ -1,3 +1,4 @@
+// this is me 
 module.exports = {
   "extends": "airbnb-base",
   "rules": {
